@@ -75,7 +75,7 @@ class MedicalAppointmentAgent:
         elif state.get("document_number") and state.get("eps") and state.get("medical_specialty"):
             return "finalizar_conversacion"
         elif state.get("document_number") and not state.get("eps"):
-            return "procesar_cita" # If document is present, move to collecting appointment details
+            return "procesar_cita" 
         elif state.get("intent") == "agendar_cita" and not state.get("document_number"):
             return "procesar_documento"
         return "clasificar_intencion"
@@ -272,10 +272,6 @@ class MedicalAppointmentAgent:
                 ])
                 
                 mensaje_lower = last_user_message.lower()
-
-                # More flexible validation: check if extracted data is not 'unknown' or empty
-                # and if the key elements of the extracted data appear in the user's message
-                # to prevent hallucination.
                 
                 eps_found = (extracted_data.eps.lower() != "unknown" and 
                             extracted_data.eps.strip() != "" and
@@ -285,7 +281,6 @@ class MedicalAppointmentAgent:
                                 extracted_data.medical_specialty.strip() != "" and
                                 any(word in mensaje_lower for word in extracted_data.medical_specialty.lower().split()))
                 
-                # If both EPS and specialty were successfully extracted
                 if eps_found and specialty_found:
                     ai_message = AIMessage(content=(
                         f"¡Excelente! He registrado todos tus datos:\n"
@@ -305,7 +300,6 @@ class MedicalAppointmentAgent:
                         "messages": state["messages"] + [ai_message]
                     }
                 else:
-                    # If either EPS or specialty (or both) are missing or invalid
                     missing_info = []
                     if not eps_found:
                         missing_info.append("tu EPS")
@@ -327,7 +321,6 @@ class MedicalAppointmentAgent:
                     }
                     
             except (ValidationError, ValueError, Exception) as e:
-                # Fallback for any parsing error
                 ai_message = AIMessage(content=(
                     "Hubo un problema al procesar tu solicitud de EPS y especialidad. "
                     "¿Podrías indicármelas nuevamente? "
